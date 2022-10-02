@@ -1,11 +1,11 @@
 # alb.tf | Load Balancer Configuration
 
-resource "aws_alb" "application_load_balancer" {
+resource "aws_alb" "load-balancer" {
   name               = "${var.app_name}-${var.app_environment}-alb"
   internal           = false
   load_balancer_type = "application"
   subnets            = aws_subnet.public.*.id
-  security_groups    = [aws_security_group.load_balancer_security_group.id]
+  security_groups    = [aws_security_group.load_balancer_sg.id]
 
   tags = {
     Name        = "${var.app_name}-alb"
@@ -13,8 +13,8 @@ resource "aws_alb" "application_load_balancer" {
   }
 }
 
-resource "aws_security_group" "load_balancer_security_group" {
-  vpc_id = aws_vpc.aws-vpc.id
+resource "aws_security_group" "load_balancer_sg" {
+  vpc_id = aws_vpc.my-vpc.id
 
   ingress {
     from_port        = 443
@@ -50,7 +50,7 @@ resource "aws_lb_target_group" "target_group" {
   port        = 80
   protocol    = "HTTP"
   target_type = "ip"
-  vpc_id      = aws_vpc.aws-vpc.id
+  vpc_id      = aws_vpc.my-vpc.id
 
   health_check {
     healthy_threshold   = "3"
@@ -69,7 +69,7 @@ resource "aws_lb_target_group" "target_group" {
 }
 
 resource "aws_lb_listener" "listener" {
-  load_balancer_arn = aws_alb.application_load_balancer.id
+  load_balancer_arn = aws_alb.load-balancer.id
   port              = "80"
   protocol          = "HTTP"
 
@@ -90,7 +90,7 @@ resource "aws_lb_listener" "listener" {
 }
 
 resource "aws_lb_listener" "listener-https" {
-  load_balancer_arn = aws_alb.application_load_balancer.id
+  load_balancer_arn = aws_alb.load-balancer.id
   port              = "443"
   protocol          = "HTTPS"
 
